@@ -22,6 +22,8 @@ PRIVATE
     webrtc/webrtc_device_resolver.h
     webrtc/webrtc_environment.cpp
     webrtc/webrtc_environment.h
+    webrtc/webrtc_system_audio_capture.cpp
+    webrtc/webrtc_system_audio_capture.h
     webrtc/webrtc_video_track.cpp
     webrtc/webrtc_video_track.h
 
@@ -34,6 +36,12 @@ PRIVATE
 
     webrtc/platform/linux/webrtc_environment_linux.cpp
     webrtc/platform/linux/webrtc_environment_linux.h
+    webrtc/platform/linux/webrtc_loopback_adm_linux.cpp
+    webrtc/platform/linux/webrtc_loopback_adm_linux.h
+    webrtc/platform/linux/webrtc_loopback_capture_linux.cpp
+    webrtc/platform/linux/webrtc_loopback_capture_linux.h
+    webrtc/platform/linux/webrtc_system_audio_capture_linux.cpp
+    webrtc/platform/linux/webrtc_system_audio_capture_linux.h
     webrtc/platform/mac/webrtc_environment_mac.h
     webrtc/platform/mac/webrtc_environment_mac.mm
     webrtc/platform/win/webrtc_environment_win.cpp
@@ -55,12 +63,22 @@ elseif (APPLE)
     PRIVATE
         WEBRTC_MAC
     )
+elseif (LINUX)
+    target_compile_definitions(lib_webrtc
+    PRIVATE
+        WEBRTC_LINUX
+    )
 endif()
 
 target_include_directories(lib_webrtc
 PUBLIC
     ${src_loc}
 )
+
+if (LINUX)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
+endif()
 
 target_link_libraries(lib_webrtc
 PUBLIC
@@ -70,4 +88,5 @@ PUBLIC
     desktop-app::external_openal
 PRIVATE
     desktop-app::external_webrtc
+    $<$<BOOL:${LINUX}>:PkgConfig::PIPEWIRE>
 )
